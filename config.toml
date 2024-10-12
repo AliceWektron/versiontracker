@@ -1,0 +1,14 @@
+[ignored_apps]
+apps = [
+    "BusyCal",
+    "Surge",
+]
+
+[app_name_mappings]
+"binaryninja" = "Binary Ninja"
+"Electron" = "Visual Studio Code"
+"Hopper Disassembler v4" = "Hopper Disassembler"
+
+[identifier_mappings]
+"com.cryptic-apps.hopper-web-4" = "com.cryptic-apps.hopper-web-4full"
+"com.aone.keka" = "com.aone.kekaKeka"

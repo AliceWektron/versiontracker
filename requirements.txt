@@ -1,0 +1,5 @@
+aiohttp
+aiohttp_retry
+beautifulsoup4
+packaging
+toml
