@@ -91,7 +91,7 @@ def find_app_folders(root_dir):
 
 def normalize_version(version_string):
     """
-    Normalize a version string by retaining only digits and dots.
+    Normalize a version string by removing build metadata in parentheses and retaining only digits and dots.
 
     Args:
         version_string (str): The original version string.
@@ -99,37 +99,53 @@ def normalize_version(version_string):
     Returns:
         str: A cleaned and standardized version string.
     """
+    # Remove build metadata in parentheses
+    main_version = re.split(r'[\(\)]', version_string)[0]
     # Retain only digits and dots, replacing other characters with dots
-    normalized_version = ''.join(c if c.isdigit() or c == '.' else '.' for c in version_string)
+    normalized_version = ''.join(c if c.isdigit() or c == '.' else '.' for c in main_version)
     # Replace multiple consecutive dots with a single dot
     normalized_version = re.sub(r'\.+', '.', normalized_version)
     # Remove leading and trailing dots
-    normalized_version = normalized_version.strip('.')
-    return normalized_version
+    return normalized_version.strip('.')
 
 def compare_versions(installed_version, latest_version):
     """
-    Compare two version strings to determine their relationship.
+    Compare two version strings, ignoring metadata, and handling cases with build numbers.
 
     Args:
         installed_version (str): The currently installed version.
         latest_version (str): The latest available version.
 
     Returns:
-        str: One of "update_available", "up_to_date", "versions_equal", or "unknown".
+        str: "update_available", "up_to_date", "versions_equal", or "unknown".
     """
     try:
+        # Parse normalized main versions
         installed_version_obj = version.parse(normalize_version(installed_version))
         latest_version_obj = version.parse(normalize_version(latest_version))
+        
+        # Compare main versions first
+        if installed_version_obj < latest_version_obj:
+            return "update_available"
+        elif installed_version_obj > latest_version_obj:
+            return "up_to_date"
+        
+        # Optional: Additional logic for build metadata comparison (e.g., within parentheses)
+        installed_build = re.search(r'\((\d+)\)', installed_version)
+        latest_build = re.search(r'\((\d+)\)', latest_version)
+        
+        if installed_build and latest_build:
+            installed_build_num = int(installed_build.group(1))
+            latest_build_num = int(latest_build.group(1))
+            if installed_build_num < latest_build_num:
+                return "update_available"
+            elif installed_build_num > latest_build_num:
+                return "up_to_date"
+
+        return "versions_equal"
+
     except version.InvalidVersion:
         return "unknown"
-
-    if installed_version_obj < latest_version_obj:
-        return "update_available"
-    elif installed_version_obj > latest_version_obj:
-        return "up_to_date"
-    else:
-        return "versions_equal"
 
 def get_mdls_version(app_path):
     """
